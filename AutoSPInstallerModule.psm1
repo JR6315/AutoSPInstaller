@@ -119,7 +119,7 @@ Function ValidateCredentials ([xml]$xmlInput)
     {
         $domain,$accountName = $account -split "\\"
         Write-Host -ForegroundColor White " - Account `"$account`"..." -NoNewline
-        if (!(userExists $accountName))
+        if (!(userExists $accountName $domain))
         {
             Write-Host -BackgroundColor Red -ForegroundColor Black "Invalid!"
             $acctInvalid = $true
@@ -7674,11 +7674,14 @@ Function Set-UserAccountControl ($flag)
 # Desc: "Here is a little powershell function I made to see check if specific active directory users exists or not."
 # From: http://oyvindnilsen.com/powershell-function-to-check-if-active-directory-users-exists/
 # ====================================================================================
-function userExists ([string]$name)
-{
+function userExists ([string]$name, [string] $domain)
+{	
     #written by: Øyvind Nilsen (oyvindnilsen.com)
     [bool]$ret = $false #return variable
-    $domainRoot = [ADSI]''
+	if ($domain -ne ""){
+		$domain = "LDAP://$domain"
+	}
+    $domainRoot = [ADSI]$domain
     $dirSearcher = New-Object System.DirectoryServices.DirectorySearcher($domainRoot)
     $dirSearcher.filter = "(&(objectClass=user)(sAMAccountName=$name))"
     $results = $dirSearcher.findall()
